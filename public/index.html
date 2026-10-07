@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bijoux de Bois · Bijoux en bois faits main</title>
+  <meta name="description" content="Bijoux en bois faits main : bracelets, colliers, boucles d'oreilles et bagues taillés dans des bois nobles. Paiement sécurisé par carte.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="home">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand"><span class="brand__mark">✦</span>Bijoux de Bois</a>
+      <nav class="nav">
+        <a href="/" aria-current="page">Boutique</a>
+        <a href="/cart.html" class="cart-link">Panier <span class="badge" data-cart-count hidden>0</span></a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <h1>Des bijoux en bois,<br>façonnés à la main.</h1>
+      <p>Bracelets, colliers, boucles d'oreilles et bagues taillés dans des bois nobles : chaque pièce est unique. Livraison en France et en Europe, paiement sécurisé par carte bancaire.</p>
+    </section>
+    <div class="filters" id="category-filters" aria-label="Filtrer par catégorie"></div>
+    <section class="grid" id="product-grid" aria-live="polite"></section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 Bijoux de Bois. Tous droits réservés.</span>
+      <span>Paiement sécurisé par <a href="https://stripe.com" target="_blank" rel="noopener">Stripe</a></span>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

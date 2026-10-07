@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#5b3a29" stop-opacity="0.14"/>
+    </linearGradient>
+    <clipPath id="zone"><rect x="0" y="0" width="800" height="660"/></clipPath>
+  </defs>
+  <rect width="800" height="800" fill="#efe3d6"/>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <g clip-path="url(#zone)"><g transform="translate(400 380) scale(1.35) translate(-400 -400)">
+    <path d="M250 180 L400 405 L550 180" fill="none" stroke="#5b3a29" stroke-width="7" stroke-dasharray="2 13" stroke-linecap="round"/>
+    <circle cx="400" cy="415" r="14" fill="#5b3a29"/>
+    <circle cx="400" cy="505" r="92" fill="#ffffff" fill-opacity="0.5" stroke="#5b3a29" stroke-width="12"/>
+    <path d="M335 505 q65 -55 130 0 M345 540 q55 -45 110 0 M352 470 q48 -38 96 0" fill="none" stroke="#5b3a29" stroke-width="5" opacity="0.45" stroke-linecap="round"/>
+  </g></g>
+  <text x="400" y="706" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" font-weight="600" fill="#5b3a29">Pendentif rond en noyer</text>
+  <text x="400" y="746" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22" fill="#5b3a29" opacity="0.7">Détail · image de démonstration</text>
+</svg>

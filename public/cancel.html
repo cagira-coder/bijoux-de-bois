@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paiement annulé · Bijoux de Bois</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="cancel">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand"><span class="brand__mark">✦</span>Bijoux de Bois</a>
+      <nav class="nav">
+        <a href="/">Boutique</a>
+        <a href="/cart.html" class="cart-link">Panier <span class="badge" data-cart-count hidden>0</span></a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="status">
+      <div class="status__icon status__icon--warn" aria-hidden="true">!</div>
+      <h1>Paiement annulé</h1>
+      <p>Aucun montant n'a été débité. Votre panier a été conservé, vous pouvez reprendre votre commande quand vous le souhaitez.</p>
+      <a class="btn btn--primary" href="/cart.html">Retour au panier</a>
+      <a class="btn btn--ghost" href="/">Retour à la boutique</a>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <span>© 2026 Bijoux de Bois. Tous droits réservés.</span>
+      <span>Paiement sécurisé par <a href="https://stripe.com" target="_blank" rel="noopener">Stripe</a></span>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

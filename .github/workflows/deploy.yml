@@ -1,0 +1,26 @@
+# Déploiement automatique : à chaque envoi sur la branche main, GitHub se connecte
+# au VPS en SSH et lance deploy/deploy.sh.
+#
+# À configurer une fois dans GitHub > Settings > Secrets and variables > Actions :
+#   VPS_HOST     : adresse IP du VPS
+#   VPS_USER     : ubuntu
+#   VPS_SSH_KEY  : clé privée SSH autorisée sur le VPS (voir DEPLOIEMENT-VPS.md)
+
+name: Déploiement sur le VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mise à jour du site sur le VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: bash /var/www/boutique/deploy/deploy.sh

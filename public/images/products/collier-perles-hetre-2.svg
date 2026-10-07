@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#9a6b3a" stop-opacity="0.14"/>
+    </linearGradient>
+    <clipPath id="zone"><rect x="0" y="0" width="800" height="660"/></clipPath>
+  </defs>
+  <rect width="800" height="800" fill="#f4e9dc"/>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <g clip-path="url(#zone)"><g transform="rotate(-10 400 400)"><path d="M220 300 A180 180 0 0 0 580 300" fill="none" stroke="#9a6b3a" stroke-width="4" opacity="0.6"/>
+    <path d="M220 300 v-60 M580 300 v-60" stroke="#9a6b3a" stroke-width="4" opacity="0.6" stroke-linecap="round"/>
+    <circle cx="574.3" cy="344.8" r="19.5" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="556.6" cy="388.7" r="22.9" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="528.1" cy="426.5" r="25.8" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="490.7" cy="455.5" r="28.1" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="447.0" cy="473.8" r="29.5" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="400.0" cy="480.0" r="30.0" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="353.0" cy="473.8" r="29.5" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="309.3" cy="455.5" r="28.1" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="271.9" cy="426.5" r="25.8" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="243.4" cy="388.7" r="22.9" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+    <circle cx="225.7" cy="344.8" r="19.5" fill="#ffffff" fill-opacity="0.55" stroke="#9a6b3a" stroke-width="7"/>
+  </g></g>
+  <text x="400" y="706" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" font-weight="600" fill="#9a6b3a">Collier de perles en hêtre</text>
+  <text x="400" y="746" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22" fill="#9a6b3a" opacity="0.7">Vue de côté · image de démonstration</text>
+</svg>

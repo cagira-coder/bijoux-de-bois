@@ -1,0 +1,20 @@
+{
+  "name": "bijoux-de-bois",
+  "version": "1.0.0",
+  "description": "Boutique en ligne avec galerie photo par produit et paiement par carte (Stripe)",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "images": "node scripts/generate-placeholders.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.6",
+    "express": "^5.2.1",
+    "stripe": "^23.0.0"
+  }
+}

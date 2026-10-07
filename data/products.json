@@ -1,0 +1,114 @@
+[
+  {
+    "id": "bracelet-olivier",
+    "name": "Bracelet en bois d'olivier",
+    "category": "Bracelets",
+    "price": 24,
+    "shortDescription": "Olivier massif, fermoir aimanté",
+    "description": "Un bracelet tourné dans du bois d'olivier massif, poncé à la main puis protégé d'une huile naturelle qui révèle ses veines dorées. Fermoir aimanté en acier inoxydable. Tour de poignet ajustable de 16 à 19 cm.",
+    "images": [
+      "/images/products/bracelet-olivier-1.svg",
+      "/images/products/bracelet-olivier-2.svg",
+      "/images/products/bracelet-olivier-3.svg"
+    ],
+    "stock": 12
+  },
+  {
+    "id": "pendentif-noyer",
+    "name": "Pendentif rond en noyer",
+    "category": "Colliers",
+    "price": 29,
+    "shortDescription": "Noyer français, cordon en coton ciré",
+    "description": "Un pendentif rond de 3 cm découpé dans du noyer français, aux teintes brunes profondes. Livré avec un cordon en coton ciré noir ajustable de 45 à 60 cm. Chaque pièce est unique : le dessin du bois ne se répète jamais.",
+    "images": [
+      "/images/products/pendentif-noyer-1.svg",
+      "/images/products/pendentif-noyer-2.svg",
+      "/images/products/pendentif-noyer-3.svg"
+    ],
+    "stock": 18
+  },
+  {
+    "id": "boucles-erable",
+    "name": "Boucles d'oreilles gouttes en érable",
+    "category": "Boucles d'oreilles",
+    "price": 19.9,
+    "shortDescription": "Érable clair, crochets en argent 925",
+    "description": "Des boucles d'oreilles en forme de goutte, taillées dans de l'érable blond et finies à la cire d'abeille. Crochets en argent 925 hypoallergéniques. Très légères : 2 g la paire.",
+    "images": [
+      "/images/products/boucles-erable-1.svg",
+      "/images/products/boucles-erable-2.svg",
+      "/images/products/boucles-erable-3.svg"
+    ],
+    "stock": 30
+  },
+  {
+    "id": "bague-ebene",
+    "name": "Bague en ébène et argent",
+    "category": "Bagues",
+    "price": 45,
+    "shortDescription": "Ébène noir, incrustation argent 925",
+    "description": "Une bague à l'anneau en ébène noir profond, rehaussé d'une incrustation en argent 925 polie miroir. Disponible du 50 au 62 : précisez votre taille dans les commentaires de commande. Livrée dans son écrin en bois.",
+    "images": [
+      "/images/products/bague-ebene-1.svg",
+      "/images/products/bague-ebene-2.svg",
+      "/images/products/bague-ebene-3.svg"
+    ],
+    "stock": 8
+  },
+  {
+    "id": "collier-perles-hetre",
+    "name": "Collier de perles en hêtre",
+    "category": "Colliers",
+    "price": 34,
+    "shortDescription": "Perles tournées main, fermoir mousqueton",
+    "description": "Un collier composé de perles de hêtre tournées une à une, de diamètre croissant vers le centre. Enfilées sur un câble gainé, fermoir mousqueton en acier inoxydable. Longueur 48 cm.",
+    "images": [
+      "/images/products/collier-perles-hetre-1.svg",
+      "/images/products/collier-perles-hetre-2.svg",
+      "/images/products/collier-perles-hetre-3.svg"
+    ],
+    "stock": 10
+  },
+  {
+    "id": "jonc-frene",
+    "name": "Jonc fin en frêne",
+    "category": "Bracelets",
+    "price": 22,
+    "shortDescription": "Frêne cintré à la vapeur, 6 mm",
+    "description": "Un jonc fin et léger en frêne cintré à la vapeur, sans collage ni fermoir. Son veinage clair et régulier se porte seul ou empilé avec d'autres bracelets. Diamètre intérieur 6,5 cm.",
+    "images": [
+      "/images/products/jonc-frene-1.svg",
+      "/images/products/jonc-frene-2.svg",
+      "/images/products/jonc-frene-3.svg"
+    ],
+    "stock": 20
+  },
+  {
+    "id": "barrette-cerisier",
+    "name": "Barrette à cheveux en cerisier",
+    "category": "Accessoires",
+    "price": 16.5,
+    "shortDescription": "Cerisier rouge, clip français 8 cm",
+    "description": "Une barrette galbée en bois de cerisier, dont la teinte rosée fonce joliment avec le temps. Montée sur un clip français de 8 cm, elle tient les cheveux épais comme les cheveux fins.",
+    "images": [
+      "/images/products/barrette-cerisier-1.svg",
+      "/images/products/barrette-cerisier-2.svg",
+      "/images/products/barrette-cerisier-3.svg"
+    ],
+    "stock": 25
+  },
+  {
+    "id": "coffret-cadeau",
+    "name": "Coffret cadeau bracelet et boucles",
+    "category": "Coffrets",
+    "price": 39,
+    "shortDescription": "Bracelet olivier + boucles érable, écrin en bois",
+    "description": "Le cadeau tout trouvé : le bracelet en olivier et les boucles d'oreilles en érable réunis dans un écrin en bois gravé. Possibilité d'ajouter un petit mot personnalisé lors de la commande.",
+    "images": [
+      "/images/products/coffret-cadeau-1.svg",
+      "/images/products/coffret-cadeau-2.svg",
+      "/images/products/coffret-cadeau-3.svg"
+    ],
+    "stock": 6
+  }
+]
