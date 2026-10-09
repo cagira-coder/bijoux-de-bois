@@ -25,9 +25,21 @@ npm start
 
 Ouvrez ensuite <http://localhost:3000>. Sans clé Stripe, le site tourne en **mode démonstration** : le bouton « Payer » mène directement à la page de confirmation, sans paiement réel.
 
-## Ajouter ou modifier des produits
+## Espace d'administration
 
-Tout le catalogue est dans `data/products.json`. Chaque produit ressemble à ceci :
+Rendez-vous sur `/admin` (par exemple <http://localhost:3000/admin> en local). À la première visite, vous choisissez le mot de passe qui protège l'administration ; il est stocké haché dans `data/admin.json`. Vous pouvez ensuite :
+
+- ajouter, modifier, réordonner ou supprimer des produits ;
+- envoyer des photos depuis votre ordinateur ou votre téléphone (elles sont redimensionnées automatiquement en 1200 px et converties en JPG) ;
+- gérer le stock (0 affiche « Épuisé ») ;
+- consulter les commandes (lues depuis Stripe une fois la clé renseignée) ;
+- changer le mot de passe.
+
+Mot de passe oublié ? Supprimez le fichier `data/admin.json` sur le serveur et retournez sur `/admin` pour en choisir un nouveau.
+
+## Ajouter ou modifier des produits à la main
+
+Le catalogue vivant est `data/products.json` (créé au premier démarrage à partir de `data/products.example.json`). L'administration le modifie pour vous, mais vous pouvez aussi l'éditer directement. Chaque produit ressemble à ceci :
 
 ```json
 {

@@ -49,7 +49,15 @@ sudo certbot --nginx -d bijoux-de-bois.com -d www.bijoux-de-bois.com --redirect
 
 Le certificat se renouvelle ensuite tout seul, comme pour les autres sites du serveur.
 
-### 3. Activer le paiement
+### 3. Choisir le mot de passe de l'administration
+
+L'espace d'administration est à l'adresse `/admin` (provisoirement <http://152.228.131.140/admin>, puis <https://bijoux-de-bois.com/admin>). À la première visite, vous choisissez votre mot de passe. Il est conseillé d'attendre que le HTTPS soit actif (étape 2) pour le faire, afin que le mot de passe ne circule pas en clair.
+
+Depuis cet espace, vous gérez les produits, les photos, le stock et consultez les commandes, sans toucher aux fichiers. Les données saisies restent sur le VPS : les mises à jour du site (`deploy/envoyer.sh` ou GitHub) ne les écrasent pas.
+
+Mot de passe oublié ? Sur le VPS : `rm /var/www/boutique/data/admin.json`, puis retournez sur `/admin`.
+
+### 4. Activer le paiement
 
 Sur le VPS, collez votre clé Stripe après `STRIPE_SECRET_KEY=` :
 

@@ -3,7 +3,8 @@
 #
 #   bash deploy/envoyer.sh
 #
-# Ce qui part : tout le projet sauf node_modules, .git, .env et les commandes enregistrées sur le VPS.
+# Ce qui part : tout le projet sauf node_modules, .git, .env, et les données vivantes du VPS
+# (catalogue géré depuis l'administration, photos envoyées, commandes, mot de passe).
 # Utile tant que le dépôt GitHub n'est pas en place ; ensuite, un "git push" suffit.
 
 set -euo pipefail
@@ -13,7 +14,10 @@ APP_DIR=/var/www/boutique
 cd "$(dirname "$0")/.."
 
 echo "== Envoi des fichiers vers $VPS =="
-tar --exclude=./node_modules --exclude=./.git --exclude=./.env --exclude=./.claude --exclude=./data/orders.json -czf - . \
+tar --exclude=./node_modules --exclude=./.git --exclude=./.env --exclude=./.claude \
+    --exclude=./data/orders.json --exclude=./data/products.json --exclude=./data/admin.json \
+    --exclude='./public/images/products/*.jpg' --exclude='./public/images/products/*.png' --exclude='./public/images/products/*.webp' \
+    -czf - . \
   | ssh "$VPS" "mkdir -p $APP_DIR && tar -xzf - -C $APP_DIR"
 
 echo "== Installation sur le VPS =="

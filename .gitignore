@@ -1,3 +1,10 @@
 node_modules/
 .env
 data/orders.json
+# Données vivantes (gérées depuis l'administration, propres à chaque serveur)
+data/products.json
+data/admin.json
+public/images/products/*.jpg
+public/images/products/*.jpeg
+public/images/products/*.png
+public/images/products/*.webp

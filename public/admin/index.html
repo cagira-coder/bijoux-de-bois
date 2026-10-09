@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administration · Bijoux de Bois</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/admin/" class="brand"><span class="brand__mark">✦</span>Administration</a>
+      <nav class="nav" id="admin-nav" hidden>
+        <a href="#produits" data-nav="produits">Produits</a>
+        <a href="#commandes" data-nav="commandes">Commandes</a>
+        <a href="#compte" data-nav="compte">Mot de passe</a>
+        <a href="/" target="_blank" rel="noopener">Voir la boutique ↗</a>
+        <button type="button" class="btn btn--ghost btn--sm" id="logout">Déconnexion</button>
+      </nav>
+    </div>
+  </header>
+  <main class="container" id="view" aria-live="polite"></main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

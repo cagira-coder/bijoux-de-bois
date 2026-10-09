@@ -18,8 +18,15 @@ const CURRENCY = (process.env.CURRENCY || 'eur').toLowerCase();
 const DATA_DIR = path.join(__dirname, 'data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const IMAGES_DIR = path.join(__dirname, 'public', 'images', 'products');
 
 // --- Catalogue -------------------------------------------------------------
+
+// Au premier démarrage, le catalogue est créé à partir de l'exemple fourni.
+if (!fs.existsSync(PRODUCTS_FILE)) {
+  fs.copyFileSync(path.join(DATA_DIR, 'products.example.json'), PRODUCTS_FILE);
+  console.log('Catalogue initial créé : data/products.json');
+}
 
 function loadProducts() {
   return JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
@@ -28,7 +35,19 @@ function loadProducts() {
 let products = loadProducts();
 let productById = new Map(products.map((p) => [p.id, p]));
 
-// Recharge le catalogue automatiquement quand data/products.json est modifié.
+const catalog = {
+  all: () => products,
+  // Enregistre le catalogue (écriture atomique) et met à jour la version en mémoire.
+  save(list) {
+    const tmp = `${PRODUCTS_FILE}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(list, null, 2));
+    fs.renameSync(tmp, PRODUCTS_FILE);
+    products = list;
+    productById = new Map(list.map((p) => [p.id, p]));
+  },
+};
+
+// Recharge le catalogue si data/products.json est modifié à la main.
 fs.watchFile(PRODUCTS_FILE, { interval: 2000 }, () => {
   try {
     products = loadProducts();
@@ -89,6 +108,9 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) =
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+
+// Espace d'administration : /admin (interface) et /api/admin/* (données).
+app.use('/api/admin', require('./admin')({ catalog, stripe, dataDir: DATA_DIR, imagesDir: IMAGES_DIR }));
 
 // --- API -------------------------------------------------------------------
 
