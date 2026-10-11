@@ -7,9 +7,9 @@
 | Serveur | VPS OVH `152.228.131.140` (Ubuntu), utilisateur `ubuntu` |
 | Emplacement du site | `/var/www/boutique` |
 | Processus | pm2, nom `boutique`, port interne 3020 (comme les autres applications du serveur) |
-| Nginx | site `bijoux-de-bois.com` + `www.bijoux-de-bois.com`, HTTP pour l'instant |
-| Adresse provisoire | <http://152.228.131.140> (la boutique est le site par défaut du serveur tant que le domaine n'est pas basculé) |
-| Code source | <https://github.com/cagira-coder/bijoux-de-bois> |
+| Nginx | site `bijoux-de-bois.com` + `www.bijoux-de-bois.com`, HTTPS actif (Let's Encrypt, renouvellement automatique) |
+| Adresse | <https://bijoux-de-bois.com> (DNS basculé le 11 octobre 2026) |
+| Code source | <https://github.com/cagira-coder/bijoux-de-bois>, déploiement automatique à chaque envoi |
 | Paiement | mode démonstration tant que la clé Stripe n'est pas renseignée |
 
 ## Comment ça s'articule
@@ -73,33 +73,9 @@ pm2 restart boutique
 
 Dans le Dashboard Stripe, l'URL du webhook à déclarer est `https://bijoux-de-bois.com/api/webhook` (voir le README).
 
-### 4. Déploiement automatique depuis GitHub (facultatif)
+### 4. Déploiement automatique depuis GitHub
 
-Le fichier `.github/workflows/deploy.yml` est prêt : à chaque envoi sur la branche `main`, GitHub se connecte au VPS et met le site à jour. Il faut lui donner une clé SSH.
-
-1. Sur le VPS, créez une clé dédiée et autorisez-la :
-
-   ```bash
-   ssh-keygen -t ed25519 -f ~/.ssh/github-deploy -N "" -C github-deploy && cat ~/.ssh/github-deploy.pub >> ~/.ssh/authorized_keys && cat ~/.ssh/github-deploy
-   ```
-
-   La commande affiche la **clé privée** (de `-----BEGIN` à `-----END`). Copiez-la en entier.
-
-2. Sur GitHub : **dépôt bijoux-de-bois → Settings → Secrets and variables → Actions → New repository secret**. Créez trois secrets :
-
-   | Nom | Valeur |
-   |---|---|
-   | `VPS_HOST` | `152.228.131.140` |
-   | `VPS_USER` | `ubuntu` |
-   | `VPS_SSH_KEY` | la clé privée copiée à l'étape 1 |
-
-3. Le dossier `/var/www/boutique` doit être relié au dépôt GitHub (une seule fois, sur le VPS) :
-
-   ```bash
-   cd /var/www/boutique && git init -b main && git remote add origin https://github.com/cagira-coder/bijoux-de-bois.git && git fetch origin && git reset --hard origin/main
-   ```
-
-   Le fichier `.env` et les commandes enregistrées ne sont pas touchés par cette opération.
+C'est en place depuis le 11 octobre 2026 : à chaque envoi sur la branche  du dépôt, GitHub se connecte au VPS avec une clé SSH dédiée et lance . L'onglet **Actions** du dépôt montre chaque déploiement et son résultat. Les trois secrets nécessaires (, , ) sont enregistrés dans le dépôt, et le dossier  du VPS est relié au dépôt.
 
 ## Mettre à jour le site
 
