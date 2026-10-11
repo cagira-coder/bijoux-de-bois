@@ -73,9 +73,9 @@ pm2 restart boutique
 
 Dans le Dashboard Stripe, l'URL du webhook à déclarer est `https://bijoux-de-bois.com/api/webhook` (voir le README).
 
-### 4. Déploiement automatique depuis GitHub
+### 5. Déploiement automatique depuis GitHub
 
-C'est en place depuis le 11 octobre 2026 : à chaque envoi sur la branche  du dépôt, GitHub se connecte au VPS avec une clé SSH dédiée et lance . L'onglet **Actions** du dépôt montre chaque déploiement et son résultat. Les trois secrets nécessaires (, , ) sont enregistrés dans le dépôt, et le dossier  du VPS est relié au dépôt.
+C'est en place depuis le 11 octobre 2026 : à chaque envoi sur la branche `main` du dépôt, GitHub se connecte au VPS avec une clé SSH dédiée et lance `deploy/deploy.sh`. L'onglet **Actions** du dépôt montre chaque déploiement et son résultat. Les trois secrets nécessaires (`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`) sont enregistrés dans le dépôt, et le dossier `/var/www/boutique` du VPS est relié au dépôt.
 
 ## Mettre à jour le site
 

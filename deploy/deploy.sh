@@ -15,6 +15,6 @@ if [[ ! -d "$APP_DIR/.git" ]]; then
 fi
 
 echo "== Récupération du code =="
-git -C "$APP_DIR" pull --ff-only
+git -C "$APP_DIR" pull --ff-only origin main
 
 bash "$APP_DIR/deploy/vps-install.sh"
