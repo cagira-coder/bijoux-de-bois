@@ -87,6 +87,12 @@
   .prow__actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
 
+/* Catégories */
+.prow--cat { grid-template-columns: 1fr auto; }
+.cat-input { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; min-width: 180px; }
+.cat-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+@media (max-width: 560px) { .prow--cat { grid-template-columns: 1fr; } .cat-input { flex: 1; min-width: 0; } }
+
 /* Commandes */
 .orders { display: grid; gap: 0.75rem; }
 .order { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }

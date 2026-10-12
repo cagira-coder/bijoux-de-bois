@@ -269,6 +269,29 @@ module.exports = function createAdminRouter({ catalog, stripe, dataDir, imagesDi
     res.json({ ok: true });
   });
 
+  // --- Catégories ----------------------------------------------------------
+
+  router.get('/categories', requireAuth, (req, res) => {
+    const counts = new Map();
+    for (const p of catalog.all()) counts.set(p.category, (counts.get(p.category) || 0) + 1);
+    res.json([...counts].map(([name, count]) => ({ name, count })));
+  });
+
+  // Renomme une catégorie pour tous ses produits (vers un nom existant = fusion).
+  router.put('/categories', requireAuth, (req, res) => {
+    const from = String(req.body?.from || '').trim();
+    const to = String(req.body?.to || '').trim();
+    if (!from || !to) return res.status(400).json({ error: 'Nom de catégorie manquant.' });
+    if (to.length > 40) return res.status(400).json({ error: 'Nom trop long (40 caractères maximum).' });
+    const list = catalog.all();
+    if (!list.some((p) => p.category === from)) return res.status(404).json({ error: 'Catégorie introuvable.' });
+    if (from === to) return res.json({ ok: true, updated: 0 });
+    let updated = 0;
+    const next = list.map((p) => (p.category === from ? (updated += 1, { ...p, category: to }) : p));
+    catalog.save(next);
+    res.json({ ok: true, updated });
+  });
+
   // --- Photos --------------------------------------------------------------
 
   const upload = multer({

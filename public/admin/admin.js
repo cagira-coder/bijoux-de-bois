@@ -318,6 +318,58 @@
     });
   }
 
+  // ---------- Catégories ----------
+
+  async function renderCategories() {
+    view.innerHTML = '<p class="muted">Chargement…</p>';
+    let categories;
+    try {
+      categories = await api('/categories');
+    } catch (err) {
+      view.innerHTML = `<p class="empty">${escapeHtml(err.message)}</p>`;
+      return;
+    }
+
+    view.innerHTML = `
+      <div class="admin-head">
+        <div>
+          <h1>Catégories</h1>
+          <p>Renommer une catégorie s'applique à tous ses produits. Donner le nom d'une catégorie existante fusionne les deux. Pour créer une catégorie, saisissez simplement son nom dans la fiche d'un produit.</p>
+        </div>
+      </div>
+      <div class="plist" id="clist">
+        ${categories.length ? categories.map((c) => `
+          <form class="prow prow--cat" data-from="${escapeHtml(c.name)}">
+            <div>
+              <h3 class="prow__name">${escapeHtml(c.name)}</h3>
+              <p class="prow__meta"><span>${c.count} produit${c.count > 1 ? 's' : ''}</span></p>
+            </div>
+            <div class="prow__actions">
+              <input class="cat-input" value="${escapeHtml(c.name)}" maxlength="40" aria-label="Nouveau nom" list="cat-names">
+              <button class="btn btn--primary btn--sm" type="submit">Renommer</button>
+            </div>
+          </form>`).join('')
+        : '<p class="empty">Aucune catégorie : ajoutez d\'abord un produit.</p>'}
+      </div>
+      <datalist id="cat-names">${categories.map((c) => `<option value="${escapeHtml(c.name)}">`).join('')}</datalist>`;
+
+    $('#clist').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target.closest('.prow--cat');
+      const from = form.dataset.from;
+      const to = $('.cat-input', form).value.trim();
+      if (!to || to === from) return;
+      try {
+        const data = await api('/categories', { method: 'PUT', body: { from, to } });
+        products = [];
+        toast(`${data.updated} produit${data.updated > 1 ? 's' : ''} déplacé${data.updated > 1 ? 's' : ''} dans « ${to} ».`);
+        renderCategories();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+  }
+
   // ---------- Commandes ----------
 
   function formatAddress(shipping) {
@@ -395,6 +447,7 @@
     const [route, arg] = location.hash.replace(/^#/, '').split('/');
     $$('[data-nav]', nav).forEach((a) => a.classList.toggle('is-active', a.dataset.nav === (route || 'produits') || (route === 'produit' && a.dataset.nav === 'produits')));
     if (route === 'produit' && arg) return renderProductForm(decodeURIComponent(arg));
+    if (route === 'categories') return renderCategories();
     if (route === 'commandes') return renderOrders();
     if (route === 'compte') return renderAccount();
     return renderProducts();
