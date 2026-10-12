@@ -18,7 +18,7 @@ const MAX_ATTEMPTS = 5;
 const LOCK_MINUTES = 15;
 const COOKIE = 'admin_session';
 
-module.exports = function createAdminRouter({ catalog, stripe, dataDir, imagesDir }) {
+module.exports = function createAdminRouter({ catalog, categoryStore, stripe, dataDir, imagesDir }) {
   const router = express.Router();
   const adminFile = path.join(dataDir, 'admin.json');
   const ordersFile = path.join(dataDir, 'orders.json');
@@ -271,25 +271,69 @@ module.exports = function createAdminRouter({ catalog, stripe, dataDir, imagesDi
 
   // --- Catégories ----------------------------------------------------------
 
+  function cleanCategoryName(value) {
+    const name = String(value || '').trim().replace(/\s+/g, ' ');
+    if (!name) return { error: 'Le nom de la catégorie est obligatoire.' };
+    if (name.length > 40) return { error: 'Nom trop long (40 caractères maximum).' };
+    return { name };
+  }
+
   router.get('/categories', requireAuth, (req, res) => {
     const counts = new Map();
     for (const p of catalog.all()) counts.set(p.category, (counts.get(p.category) || 0) + 1);
-    res.json([...counts].map(([name, count]) => ({ name, count })));
+    res.json(categoryStore.all().map((name) => ({ name, count: counts.get(name) || 0 })));
+  });
+
+  router.post('/categories', requireAuth, (req, res) => {
+    const { name, error } = cleanCategoryName(req.body?.name);
+    if (error) return res.status(400).json({ error });
+    const list = categoryStore.all();
+    if (list.some((c) => c.toLowerCase() === name.toLowerCase())) {
+      return res.status(400).json({ error: 'Cette catégorie existe déjà.' });
+    }
+    categoryStore.save([...list, name]);
+    res.status(201).json({ ok: true, name });
   });
 
   // Renomme une catégorie pour tous ses produits (vers un nom existant = fusion).
   router.put('/categories', requireAuth, (req, res) => {
     const from = String(req.body?.from || '').trim();
-    const to = String(req.body?.to || '').trim();
-    if (!from || !to) return res.status(400).json({ error: 'Nom de catégorie manquant.' });
-    if (to.length > 40) return res.status(400).json({ error: 'Nom trop long (40 caractères maximum).' });
-    const list = catalog.all();
-    if (!list.some((p) => p.category === from)) return res.status(404).json({ error: 'Catégorie introuvable.' });
+    const { name: to, error } = cleanCategoryName(req.body?.to);
+    if (error) return res.status(400).json({ error });
+    const list = categoryStore.all();
+    if (!list.includes(from)) return res.status(404).json({ error: 'Catégorie introuvable.' });
     if (from === to) return res.json({ ok: true, updated: 0 });
+    const existing = list.find((c) => c !== from && c.toLowerCase() === to.toLowerCase());
+    const target = existing || to;
     let updated = 0;
-    const next = list.map((p) => (p.category === from ? (updated += 1, { ...p, category: to }) : p));
-    catalog.save(next);
-    res.json({ ok: true, updated });
+    const products = catalog.all().map((p) => (p.category === from ? (updated += 1, { ...p, category: target }) : p));
+    const next = existing ? list.filter((c) => c !== from) : list.map((c) => (c === from ? target : c));
+    categoryStore.save(next);
+    catalog.save(products);
+    res.json({ ok: true, updated, merged: Boolean(existing) });
+  });
+
+  // Ordre d'affichage des catégories (filtres de la boutique).
+  router.put('/categories/order', requireAuth, (req, res) => {
+    const names = Array.isArray(req.body?.names) ? req.body.names : [];
+    const list = categoryStore.all();
+    if (names.length !== list.length || !names.every((n) => list.includes(n))) {
+      return res.status(400).json({ error: 'Liste incomplète.' });
+    }
+    categoryStore.save(names);
+    res.json({ ok: true });
+  });
+
+  // Suppression d'une catégorie vide uniquement.
+  router.delete('/categories/:name', requireAuth, (req, res) => {
+    const name = req.params.name;
+    const list = categoryStore.all();
+    if (!list.includes(name)) return res.status(404).json({ error: 'Catégorie introuvable.' });
+    if (catalog.all().some((p) => p.category === name)) {
+      return res.status(400).json({ error: 'Cette catégorie contient encore des produits : déplacez-les ou renommez-la.' });
+    }
+    categoryStore.save(list.filter((c) => c !== name));
+    res.json({ ok: true });
   });
 
   // --- Photos --------------------------------------------------------------

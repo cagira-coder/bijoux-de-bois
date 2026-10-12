@@ -150,7 +150,16 @@
       return;
     }
 
-    const categories = ['Tous', ...new Set(products.map((p) => p.category))];
+    // Ordre des filtres défini dans l'administration (repli : ordre d'apparition des produits).
+    let ordered = [];
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) ordered = await res.json();
+    } catch {
+      // Repli ci-dessous.
+    }
+    const fromProducts = [...new Set(products.map((p) => p.category))];
+    const categories = ['Tous', ...ordered.filter((c) => fromProducts.includes(c)), ...fromProducts.filter((c) => !ordered.includes(c))];
     filters.innerHTML = categories
       .map((c, i) => `<button class="chip${i === 0 ? ' is-active' : ''}" data-category="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
       .join('');

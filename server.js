@@ -18,6 +18,7 @@ const CURRENCY = (process.env.CURRENCY || 'eur').toLowerCase();
 const DATA_DIR = path.join(__dirname, 'data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
 const IMAGES_DIR = path.join(__dirname, 'public', 'images', 'products');
 
 // --- Catalogue -------------------------------------------------------------
@@ -44,6 +45,35 @@ const catalog = {
     fs.renameSync(tmp, PRODUCTS_FILE);
     products = list;
     productById = new Map(list.map((p) => [p.id, p]));
+    // Toute catégorie utilisée par un produit figure dans la liste.
+    const missing = list.map((p) => p.category).filter((c) => !categories.includes(c));
+    if (missing.length) categoryStore.save([...categories, ...new Set(missing)]);
+  },
+};
+
+// --- Catégories (ordre d'affichage, catégories vides autorisées) ----------
+
+function loadCategories() {
+  let stored = [];
+  try {
+    stored = JSON.parse(fs.readFileSync(CATEGORIES_FILE, 'utf8'));
+  } catch {
+    // Pas encore de fichier : la liste est déduite des produits.
+  }
+  const names = Array.isArray(stored) ? stored.filter((n) => typeof n === 'string') : [];
+  for (const p of products) if (!names.includes(p.category)) names.push(p.category);
+  return names;
+}
+
+let categories = loadCategories();
+
+const categoryStore = {
+  all: () => categories,
+  save(list) {
+    const tmp = `${CATEGORIES_FILE}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(list, null, 2));
+    fs.renameSync(tmp, CATEGORIES_FILE);
+    categories = list;
   },
 };
 
@@ -52,6 +82,7 @@ fs.watchFile(PRODUCTS_FILE, { interval: 2000 }, () => {
   try {
     products = loadProducts();
     productById = new Map(products.map((p) => [p.id, p]));
+    categories = loadCategories();
     console.log(`Catalogue rechargé (${products.length} produits)`);
   } catch (err) {
     console.error('products.json invalide :', err.message);
@@ -110,7 +141,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 // Espace d'administration : /admin (interface) et /api/admin/* (données).
-app.use('/api/admin', require('./admin')({ catalog, stripe, dataDir: DATA_DIR, imagesDir: IMAGES_DIR }));
+app.use('/api/admin', require('./admin')({ catalog, categoryStore, stripe, dataDir: DATA_DIR, imagesDir: IMAGES_DIR }));
 
 // --- API -------------------------------------------------------------------
 
@@ -120,6 +151,12 @@ app.get('/api/config', (req, res) => {
 
 app.get('/api/products', (req, res) => {
   res.json(products);
+});
+
+// Catégories dans l'ordre choisi dans l'administration (seules celles qui ont des produits).
+app.get('/api/categories', (req, res) => {
+  const used = new Set(products.map((p) => p.category));
+  res.json(categories.filter((c) => used.has(c)));
 });
 
 app.get('/api/products/:id', (req, res) => {

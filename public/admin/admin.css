@@ -88,6 +88,9 @@
 }
 
 /* Catégories */
+.cat-add { margin-bottom: 1rem; }
+.cat-add__row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.cat-add__row input { flex: 1; min-width: 200px; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 10px; }
 .prow--cat { grid-template-columns: 1fr auto; }
 .cat-input { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; min-width: 180px; }
 .cat-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }

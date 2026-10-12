@@ -8,3 +8,4 @@ public/images/products/*.jpg
 public/images/products/*.jpeg
 public/images/products/*.png
 public/images/products/*.webp
+data/categories.json

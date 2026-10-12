@@ -189,7 +189,12 @@
       }
       product = { ...product, images: [...product.images] };
     }
-    const categories = [...new Set(products.map((p) => p.category))];
+    let categories = [];
+    try {
+      categories = (await api('/categories')).map((c) => c.name);
+    } catch {
+      categories = [...new Set(products.map((p) => p.category))];
+    }
 
     view.innerHTML = `
       <div class="admin-head">
@@ -334,24 +339,47 @@
       <div class="admin-head">
         <div>
           <h1>Catégories</h1>
-          <p>Renommer une catégorie s'applique à tous ses produits. Donner le nom d'une catégorie existante fusionne les deux. Pour créer une catégorie, saisissez simplement son nom dans la fiche d'un produit.</p>
+          <p>L'ordre ci-dessous est celui des filtres de la boutique. Renommer une catégorie s'applique à tous ses produits ; donner le nom d'une catégorie existante fusionne les deux. Une catégorie vide n'apparaît pas dans la boutique tant qu'elle n'a pas de produit.</p>
         </div>
       </div>
+      <form class="form form--card cat-add" id="cat-add">
+        <div class="field">
+          <label for="cat-new">Nouvelle catégorie</label>
+          <div class="cat-add__row">
+            <input id="cat-new" maxlength="40" required placeholder="Par exemple : Broches">
+            <button class="btn btn--primary" type="submit">+ Ajouter</button>
+          </div>
+        </div>
+      </form>
       <div class="plist" id="clist">
-        ${categories.length ? categories.map((c) => `
+        ${categories.length ? categories.map((c, i) => `
           <form class="prow prow--cat" data-from="${escapeHtml(c.name)}">
             <div>
               <h3 class="prow__name">${escapeHtml(c.name)}</h3>
-              <p class="prow__meta"><span>${c.count} produit${c.count > 1 ? 's' : ''}</span></p>
+              <p class="prow__meta"><span>${c.count ? `${c.count} produit${c.count > 1 ? 's' : ''}` : 'Aucun produit (invisible dans la boutique)'}</span></p>
             </div>
             <div class="prow__actions">
+              <button type="button" class="btn btn--ghost btn--sm" data-move="-1" ${i === 0 ? 'disabled' : ''} aria-label="Monter">↑</button>
+              <button type="button" class="btn btn--ghost btn--sm" data-move="1" ${i === categories.length - 1 ? 'disabled' : ''} aria-label="Descendre">↓</button>
               <input class="cat-input" value="${escapeHtml(c.name)}" maxlength="40" aria-label="Nouveau nom" list="cat-names">
               <button class="btn btn--primary btn--sm" type="submit">Renommer</button>
+              ${c.count === 0 ? '<button type="button" class="btn btn--danger btn--sm" data-delete>Supprimer</button>' : ''}
             </div>
           </form>`).join('')
-        : '<p class="empty">Aucune catégorie : ajoutez d\'abord un produit.</p>'}
+        : '<p class="empty">Aucune catégorie pour l\'instant.</p>'}
       </div>
       <datalist id="cat-names">${categories.map((c) => `<option value="${escapeHtml(c.name)}">`).join('')}</datalist>`;
+
+    $('#cat-add').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = await api('/categories', { method: 'POST', body: { name: $('#cat-new').value } });
+        toast(`Catégorie « ${data.name} » ajoutée.`);
+        renderCategories();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
 
     $('#clist').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -362,8 +390,33 @@
       try {
         const data = await api('/categories', { method: 'PUT', body: { from, to } });
         products = [];
-        toast(`${data.updated} produit${data.updated > 1 ? 's' : ''} déplacé${data.updated > 1 ? 's' : ''} dans « ${to} ».`);
+        toast(data.merged ? `Fusionnée : ${data.updated} produit${data.updated > 1 ? 's' : ''} déplacé${data.updated > 1 ? 's' : ''}.` : `Catégorie renommée en « ${to} ».`);
         renderCategories();
+      } catch (err) {
+        toast(err.message, true);
+      }
+    });
+
+    $('#clist').addEventListener('click', async (e) => {
+      const form = e.target.closest('.prow--cat');
+      if (!form) return;
+      const name = form.dataset.from;
+      const move = e.target.closest('[data-move]');
+      const del = e.target.closest('[data-delete]');
+      try {
+        if (move) {
+          const names = categories.map((c) => c.name);
+          const from = names.indexOf(name);
+          const to = from + Number(move.dataset.move);
+          if (to < 0 || to >= names.length) return;
+          names.splice(to, 0, names.splice(from, 1)[0]);
+          await api('/categories/order', { method: 'PUT', body: { names } });
+          renderCategories();
+        } else if (del) {
+          await api(`/categories/${encodeURIComponent(name)}`, { method: 'DELETE' });
+          toast('Catégorie supprimée.');
+          renderCategories();
+        }
       } catch (err) {
         toast(err.message, true);
       }
