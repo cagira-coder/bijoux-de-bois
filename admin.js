@@ -195,6 +195,17 @@ module.exports = function createAdminRouter({ catalog, categoryStore, stripe, da
       ? body.images.filter((s) => typeof s === 'string' && /^\/images\/products\/[\w.-]+$/.test(s))
       : [];
 
+    // Point de cadrage de chaque photo (en %), indexé par chemin d'image ; le centre (50/50) est la valeur par défaut.
+    const focus = {};
+    for (const src of images) {
+      const f = body.focus?.[src];
+      const x = Math.round(Number(f?.x));
+      const y = Math.round(Number(f?.y));
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      const point = { x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)) };
+      if (point.x !== 50 || point.y !== 50) focus[src] = point;
+    }
+
     if (!name) return { error: 'Le nom est obligatoire.' };
     if (!Number.isFinite(price) || price < 0) return { error: 'Le prix est invalide.' };
     if (!Number.isInteger(stock) || stock < 0) return { error: 'Le stock est invalide.' };
@@ -209,6 +220,7 @@ module.exports = function createAdminRouter({ catalog, categoryStore, stripe, da
         shortDescription: String(body.shortDescription || '').trim(),
         description: String(body.description || '').trim(),
         images,
+        focus,
         stock,
       },
     };

@@ -14,6 +14,9 @@
 
   // ---------- Utilitaires ----------
 
+  // Applique le point de cadrage d'une photo (en %) ; sans point, le centre.
+  const setFocus = (img, f) => { img.style.objectPosition = f ? `${f.x}% ${f.y}%` : ''; };
+
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (ch) => (
       { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
@@ -135,6 +138,10 @@
           </div>`).join('')
         : '<p class="empty">Aucun produit. Ajoutez-en un !</p>'}
       </div>`;
+    $$('.prow').forEach((row) => {
+      const p = products.find((item) => item.id === row.dataset.id);
+      if (p) setFocus($('img', row), p.focus && p.focus[p.images[0]]);
+    });
 
     $('#plist').addEventListener('click', async (e) => {
       const row = e.target.closest('.prow');
@@ -177,7 +184,7 @@
 
   async function renderProductForm(id) {
     const isNew = id === 'nouveau';
-    let product = { name: '', category: '', price: '', shortDescription: '', description: '', images: [], stock: 10 };
+    let product = { name: '', category: '', price: '', shortDescription: '', description: '', images: [], focus: {}, stock: 10 };
     if (!products.length) {
       try { products = await api('/products'); } catch (err) { return toast(err.message, true); }
     }
@@ -187,7 +194,7 @@
         view.innerHTML = '<p class="empty">Produit introuvable. <a href="#produits">Retour à la liste</a></p>';
         return;
       }
-      product = { ...product, images: [...product.images] };
+      product = { ...product, images: [...product.images], focus: { ...product.focus } };
     }
     let categories = [];
     try {
@@ -239,6 +246,7 @@
         <div class="field">
           <label>Photos <small>(la première est la photo principale)</small></label>
           <div class="photos" id="photos"></div>
+          <div class="cropper" id="cropper" hidden></div>
           <label class="dropzone" id="dropzone">
             <input type="file" id="f-files" accept="image/*" multiple>
             <strong>Ajouter des photos</strong> : cliquez ou glissez vos images ici.<br>
@@ -260,19 +268,97 @@
           <img src="${escapeHtml(src)}" alt="">
           ${i === 0 ? '<span class="photo__tag">Principale</span>' : ''}
           <div class="photo__actions">
+            <button type="button" data-photo="crop" title="Recadrer la photo">◎</button>
             <button type="button" data-photo="up" title="Mettre avant" ${i === 0 ? 'disabled' : ''}>↑</button>
             <button type="button" class="del" data-photo="del" title="Retirer">✕</button>
           </div>
         </div>`).join('') || '<p class="muted">Aucune photo pour l\'instant.</p>';
+      $$('.photo img', photosEl).forEach((img, i) => setFocus(img, product.focus[product.images[i]]));
     };
     renderPhotos();
+
+    // Recadrage : on clique sur la partie de la photo à garder au centre du cadre carré de la boutique.
+    // Les styles passent par le JS (et non style="") car la CSP interdit les styles en ligne.
+    const cropEl = $('#cropper');
+    let cropSrc = null;
+    const updateCropper = () => {
+      const f = product.focus[cropSrc] || { x: 50, y: 50 };
+      const dot = $('#crop-dot');
+      dot.style.left = `${f.x}%`;
+      dot.style.top = `${f.y}%`;
+      setFocus($('#crop-preview'), f);
+      renderPhotos();
+    };
+    const closeCropper = () => {
+      cropSrc = null;
+      cropEl.hidden = true;
+      cropEl.innerHTML = '';
+    };
+    const openCropper = (src) => {
+      cropSrc = src;
+      cropEl.hidden = false;
+      cropEl.innerHTML = `
+        <p><strong>Recadrer la photo</strong> : cliquez sur la partie à garder au centre du cadre.</p>
+        <div class="cropper__body">
+          <div class="cropper__pick" id="crop-pick"><img src="${escapeHtml(src)}" alt=""><span class="cropper__dot" id="crop-dot"></span></div>
+          <div class="cropper__side">
+            <div class="cropper__square"><img id="crop-preview" src="${escapeHtml(src)}" alt=""></div>
+            <small>Aperçu dans la boutique</small>
+          </div>
+        </div>
+        <div class="cropper__actions">
+          <button type="button" class="btn btn--ghost btn--sm" data-crop="reset">Recentrer</button>
+          <button type="button" class="btn btn--primary btn--sm" data-crop="done">Terminé</button>
+        </div>`;
+      updateCropper();
+      cropEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    };
+    const pickFocus = (e) => {
+      const rect = $('#crop-pick img').getBoundingClientRect();
+      const pct = (value, size) => Math.round(Math.min(100, Math.max(0, (value / size) * 100)));
+      const x = pct(e.clientX - rect.left, rect.width);
+      const y = pct(e.clientY - rect.top, rect.height);
+      if (x === 50 && y === 50) delete product.focus[cropSrc];
+      else product.focus[cropSrc] = { x, y };
+      updateCropper();
+    };
+    cropEl.addEventListener('pointerdown', (e) => {
+      const pick = e.target.closest('#crop-pick');
+      if (!pick) return;
+      e.preventDefault();
+      pick.setPointerCapture(e.pointerId);
+      pickFocus(e);
+    });
+    cropEl.addEventListener('pointermove', (e) => {
+      const pick = $('#crop-pick');
+      if (pick && pick.hasPointerCapture(e.pointerId)) pickFocus(e);
+    });
+    cropEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-crop]');
+      if (!btn) return;
+      if (btn.dataset.crop === 'reset') {
+        delete product.focus[cropSrc];
+        updateCropper();
+      } else {
+        closeCropper();
+      }
+    });
 
     photosEl.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-photo]');
       if (!btn) return;
       const i = Number(btn.closest('.photo').dataset.index);
-      if (btn.dataset.photo === 'del') product.images.splice(i, 1);
-      else if (i > 0) product.images.splice(i - 1, 0, product.images.splice(i, 1)[0]);
+      if (btn.dataset.photo === 'crop') {
+        openCropper(product.images[i]);
+        return;
+      }
+      if (btn.dataset.photo === 'del') {
+        delete product.focus[product.images[i]];
+        product.images.splice(i, 1);
+      } else if (i > 0) {
+        product.images.splice(i - 1, 0, product.images.splice(i, 1)[0]);
+      }
+      closeCropper();
       renderPhotos();
     });
 
@@ -311,6 +397,7 @@
         shortDescription: $('#f-short').value,
         description: $('#f-desc').value,
         images: product.images,
+        focus: product.focus,
       };
       try {
         await api(isNew ? '/products' : `/products/${encodeURIComponent(product.id)}`, { method: isNew ? 'POST' : 'PUT', body });

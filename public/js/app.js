@@ -14,6 +14,18 @@
 
   // ---------- Utilitaires ----------
 
+  // Cadrage des photos : le point choisi dans l'admin reste visible dans le cadre carré.
+  // Appliqué en JS (et non via style="") car la CSP interdit les styles en ligne.
+  const focusAttr = (p, src) => {
+    const f = p.focus && p.focus[src];
+    return f ? ` data-focus="${Number(f.x)} ${Number(f.y)}"` : '';
+  };
+  const applyFocus = (root) => {
+    root.querySelectorAll('img').forEach((img) => {
+      img.style.objectPosition = img.dataset.focus ? img.dataset.focus.split(' ').map((n) => `${n}%`).join(' ') : '';
+    });
+  };
+
   const formatPrice = (amount) => formatter.format(amount);
 
   function escapeHtml(value) {
@@ -112,7 +124,7 @@
     return `
       <article class="card">
         <a class="card__image" href="${productUrl(p)}">
-          <img src="${escapeHtml(p.images[0])}" alt="${escapeHtml(p.name)}" loading="lazy">
+          <img src="${escapeHtml(p.images[0])}" alt="${escapeHtml(p.name)}" loading="lazy"${focusAttr(p, p.images[0])}>
         </a>
         <div class="card__body">
           <span class="card__category">${escapeHtml(p.category)}</span>
@@ -167,6 +179,7 @@
     const render = (category) => {
       const list = products.filter((p) => category === 'Tous' || p.category === category);
       grid.innerHTML = list.length ? list.map(productCard).join('') : '<p class="empty">Aucun produit dans cette catégorie.</p>';
+      applyFocus(grid);
     };
     render('Tous');
 
@@ -200,13 +213,13 @@
     const thumbs = product.images.length > 1
       ? `<div class="gallery__thumbs">${product.images.map((src, i) => `
           <button type="button" class="gallery__thumb${i === 0 ? ' is-active' : ''}" data-src="${escapeHtml(src)}" aria-label="Photo ${i + 1}">
-            <img src="${escapeHtml(src)}" alt="" loading="lazy">
+            <img src="${escapeHtml(src)}" alt="" loading="lazy"${focusAttr(product, src)}>
           </button>`).join('')}</div>`
       : '';
 
     root.innerHTML = `
       <div class="gallery">
-        <div class="gallery__main"><img id="main-image" src="${escapeHtml(product.images[0])}" alt="${escapeHtml(product.name)}"></div>
+        <div class="gallery__main"><img id="main-image" src="${escapeHtml(product.images[0])}" alt="${escapeHtml(product.name)}"${focusAttr(product, product.images[0])}></div>
         ${thumbs}
       </div>
       <div class="product-info">
@@ -226,6 +239,8 @@
         </div>
       </div>`;
 
+    applyFocus(root);
+
     const qtyInput = $('#qty', root);
     const readQty = () => clamp(parseInt(qtyInput.value, 10) || 1, 1, 99);
 
@@ -237,7 +252,10 @@
       }
       const thumb = e.target.closest('.gallery__thumb');
       if (thumb) {
-        $('#main-image', root).src = thumb.dataset.src;
+        const main = $('#main-image', root);
+        main.src = thumb.dataset.src;
+        main.dataset.focus = $('img', thumb).dataset.focus || '';
+        applyFocus(main.parentElement);
         $$('.gallery__thumb', root).forEach((t) => t.classList.toggle('is-active', t === thumb));
       }
     });
@@ -286,7 +304,7 @@
           <div class="cart-list">
             ${lines.map(({ product: p, quantity }) => `
               <div class="cart-item" data-id="${escapeHtml(p.id)}">
-                <a class="cart-item__img" href="${productUrl(p)}"><img src="${escapeHtml(p.images[0])}" alt="${escapeHtml(p.name)}"></a>
+                <a class="cart-item__img" href="${productUrl(p)}"><img src="${escapeHtml(p.images[0])}" alt="${escapeHtml(p.name)}"${focusAttr(p, p.images[0])}></a>
                 <div>
                   <h3 class="cart-item__name"><a href="${productUrl(p)}">${escapeHtml(p.name)}</a></h3>
                   <p class="cart-item__unit">${formatPrice(p.price)} l'unité</p>
@@ -311,6 +329,7 @@
             <p class="summary__note">Paiement sécurisé par carte bancaire via Stripe.</p>
           </aside>
         </div>`;
+      applyFocus(root);
     };
     render();
 

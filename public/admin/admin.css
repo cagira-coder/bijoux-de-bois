@@ -46,6 +46,17 @@
 .photo__actions button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: rgba(255, 255, 255, 0.92); color: var(--text); font-size: 0.9rem; display: grid; place-items: center; }
 .photo__actions button:hover { background: #fff; }
 .photo__actions button.del { color: var(--danger); }
+.cropper { margin-top: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface, #fff); }
+.cropper[hidden] { display: none; }
+.cropper p { margin: 0 0 0.75rem; }
+.cropper__body { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.cropper__pick { position: relative; display: inline-block; max-width: 100%; cursor: crosshair; touch-action: none; user-select: none; line-height: 0; }
+.cropper__pick img { display: block; max-width: 100%; max-height: 360px; border-radius: 8px; pointer-events: none; }
+.cropper__dot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; border: 3px solid #fff; background: var(--accent); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35); pointer-events: none; }
+.cropper__side { display: flex; flex-direction: column; gap: 0.35rem; }
+.cropper__square { width: 160px; height: 160px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #eaeff5; }
+.cropper__square img { width: 100%; height: 100%; object-fit: cover; }
+.cropper__actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
 .dropzone {
   border: 2px dashed var(--border);
   border-radius: var(--radius);
