@@ -173,9 +173,11 @@
       // Repli ci-dessous.
     }
     const fromProducts = [...new Set(products.map((p) => p.category))];
+    const requested = new URLSearchParams(location.search).get('categorie');
     const categories = ['Tous', ...ordered.filter((c) => fromProducts.includes(c)), ...fromProducts.filter((c) => !ordered.includes(c))];
+    const initial = categories.includes(requested) ? requested : 'Tous';
     filters.innerHTML = categories
-      .map((c, i) => `<button class="chip${i === 0 ? ' is-active' : ''}" data-category="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
+      .map((c) => `<button class="chip${c === initial ? ' is-active' : ''}" data-category="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
       .join('');
 
     const render = (category) => {
@@ -183,7 +185,7 @@
       grid.innerHTML = list.length ? list.map(productCard).join('') : '<p class="empty">Aucun produit dans cette catégorie.</p>';
       applyFocus(grid);
     };
-    render('Tous');
+    render(initial);
 
     filters.addEventListener('click', (e) => {
       const chip = e.target.closest('[data-category]');
@@ -225,7 +227,13 @@
         ${thumbs}
       </div>
       <div class="product-info">
-        <a class="back" href="/">← Retour à la boutique</a>
+        <nav class="breadcrumb" aria-label="Fil d'Ariane">
+          <ol>
+            <li><a href="/">Boutique</a></li>
+            <li><a href="/?categorie=${encodeURIComponent(product.category)}">${escapeHtml(product.category)}</a></li>
+            <li aria-current="page">${escapeHtml(product.name)}</li>
+          </ol>
+        </nav>
         <div><span class="card__category">${escapeHtml(product.category)}</span></div>
         <h1>${escapeHtml(product.name)}</h1>
         <p class="price price--lg">${formatPrice(product.price)}</p>
