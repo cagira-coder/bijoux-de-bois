@@ -15,7 +15,10 @@
   // ---------- Utilitaires ----------
 
   // Applique le point de cadrage d'une photo (en %) ; sans point, le centre.
-  const setFocus = (img, f) => { img.style.objectPosition = f ? `${f.x}% ${f.y}%` : ''; };
+  const setFocus = (img, f) => {
+    img.style.objectPosition = f ? `${f.x}% ${f.y}%` : '';
+    img.style.objectFit = f && f.full ? 'contain' : '';
+  };
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (ch) => (
@@ -286,6 +289,8 @@
       const dot = $('#crop-dot');
       dot.style.left = `${f.x}%`;
       dot.style.top = `${f.y}%`;
+      dot.hidden = Boolean(f.full);
+      $('#crop-full').checked = Boolean(f.full);
       setFocus($('#crop-preview'), f);
       renderPhotos();
     };
@@ -304,6 +309,7 @@
           <div class="cropper__side">
             <div class="cropper__square"><img id="crop-preview" src="${escapeHtml(src)}" alt=""></div>
             <small>Aperçu dans la boutique</small>
+            <label class="cropper__full"><input type="checkbox" id="crop-full"> Photo entière (sans rognage)</label>
           </div>
         </div>
         <div class="cropper__actions">
@@ -313,14 +319,19 @@
       updateCropper();
       cropEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     };
+    const setPoint = (patch) => {
+      const f = { x: 50, y: 50, ...product.focus[cropSrc], ...patch };
+      if (!f.full) delete f.full;
+      if (f.full || f.x !== 50 || f.y !== 50) product.focus[cropSrc] = f;
+      else delete product.focus[cropSrc];
+      updateCropper();
+    };
     const pickFocus = (e) => {
       const rect = $('#crop-pick img').getBoundingClientRect();
       const pct = (value, size) => Math.round(Math.min(100, Math.max(0, (value / size) * 100)));
       const x = pct(e.clientX - rect.left, rect.width);
       const y = pct(e.clientY - rect.top, rect.height);
-      if (x === 50 && y === 50) delete product.focus[cropSrc];
-      else product.focus[cropSrc] = { x, y };
-      updateCropper();
+      setPoint({ x, y });
     };
     cropEl.addEventListener('pointerdown', (e) => {
       const pick = e.target.closest('#crop-pick');
@@ -332,6 +343,9 @@
     cropEl.addEventListener('pointermove', (e) => {
       const pick = $('#crop-pick');
       if (pick && pick.hasPointerCapture(e.pointerId)) pickFocus(e);
+    });
+    cropEl.addEventListener('change', (e) => {
+      if (e.target.id === 'crop-full') setPoint({ full: e.target.checked });
     });
     cropEl.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-crop]');

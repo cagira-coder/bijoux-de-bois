@@ -18,11 +18,13 @@
   // Appliqué en JS (et non via style="") car la CSP interdit les styles en ligne.
   const focusAttr = (p, src) => {
     const f = p.focus && p.focus[src];
-    return f ? ` data-focus="${Number(f.x)} ${Number(f.y)}"` : '';
+    return f ? ` data-focus="${Number(f.x)} ${Number(f.y)}${f.full ? ' full' : ''}"` : '';
   };
   const applyFocus = (root) => {
     root.querySelectorAll('img').forEach((img) => {
-      img.style.objectPosition = img.dataset.focus ? img.dataset.focus.split(' ').map((n) => `${n}%`).join(' ') : '';
+      const [x, y, full] = (img.dataset.focus || '').split(' ');
+      img.style.objectPosition = x ? `${x}% ${y}%` : '';
+      img.style.objectFit = full ? 'contain' : '';
     });
   };
 

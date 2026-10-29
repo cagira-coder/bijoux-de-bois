@@ -195,15 +195,18 @@ module.exports = function createAdminRouter({ catalog, categoryStore, stripe, da
       ? body.images.filter((s) => typeof s === 'string' && /^\/images\/products\/[\w.-]+$/.test(s))
       : [];
 
-    // Point de cadrage de chaque photo (en %), indexé par chemin d'image ; le centre (50/50) est la valeur par défaut.
+    // Cadrage de chaque photo, indexé par chemin d'image : point à garder au centre (en %, 50/50 par défaut) ou photo entière.
     const focus = {};
     for (const src of images) {
       const f = body.focus?.[src];
-      const x = Math.round(Number(f?.x));
-      const y = Math.round(Number(f?.y));
-      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-      const point = { x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)) };
-      if (point.x !== 50 || point.y !== 50) focus[src] = point;
+      if (!f) continue;
+      const percent = (v) => {
+        const n = Math.round(Number(v));
+        return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 50;
+      };
+      const point = { x: percent(f.x), y: percent(f.y) };
+      if (f.full === true) point.full = true; // photo affichée en entier, sans rognage
+      if (point.full || point.x !== 50 || point.y !== 50) focus[src] = point;
     }
 
     if (!name) return { error: 'Le nom est obligatoire.' };
