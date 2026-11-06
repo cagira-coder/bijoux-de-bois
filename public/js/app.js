@@ -37,6 +37,8 @@
   }
 
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+  // Quantité maximale commandable : jamais plus que le stock (ni plus de 99).
+  const maxQty = (product) => clamp(Number.isInteger(product.stock) ? product.stock : 99, 1, 99);
 
   let toastTimer;
   function toast(message, link) {
@@ -85,16 +87,26 @@
     updateCartBadge();
   }
 
-  function addToCart(id, quantity = 1) {
+  // Ajoute au panier sans dépasser le stock ; renvoie la quantité réellement ajoutée.
+  function addToCart(product, quantity = 1) {
     const cart = getCart();
-    const line = cart.find((l) => l.id === id);
-    if (line) line.quantity = clamp(line.quantity + quantity, 1, 99);
-    else cart.push({ id, quantity: clamp(quantity, 1, 99) });
+    const max = maxQty(product);
+    const line = cart.find((l) => l.id === product.id);
+    const before = line ? line.quantity : 0;
+    const after = clamp(before + quantity, 1, max);
+    if (line) line.quantity = after;
+    else cart.push({ id: product.id, quantity: after });
     saveCart(cart);
+    return after - before;
   }
 
-  function setQuantity(id, quantity) {
-    saveCart(getCart().map((l) => (l.id === id ? { ...l, quantity: clamp(quantity, 1, 99) } : l)));
+  function addedToast(added) {
+    if (added > 0) toast('Ajouté au panier', { href: '/cart.html', label: 'Voir le panier' });
+    else toast('Quantité maximale déjà dans le panier', { href: '/cart.html', label: 'Voir le panier' });
+  }
+
+  function setQuantity(product, quantity) {
+    saveCart(getCart().map((l) => (l.id === product.id ? { ...l, quantity: clamp(quantity, 1, maxQty(product)) } : l)));
   }
 
   function removeFromCart(id) {
@@ -242,7 +254,7 @@
         <div class="add-row">
           <div class="qty" aria-label="Quantité">
             <button type="button" data-qty="-1" aria-label="Diminuer">−</button>
-            <input id="qty" type="number" min="1" max="99" value="1" inputmode="numeric">
+            <input id="qty" type="number" min="1" max="${maxQty(product)}" value="1" inputmode="numeric">
             <button type="button" data-qty="1" aria-label="Augmenter">+</button>
           </div>
           <button class="btn btn--primary btn--lg" id="add-btn" ${soldOut ? 'disabled' : ''}>Ajouter au panier</button>
@@ -252,12 +264,12 @@
     applyFocus(root);
 
     const qtyInput = $('#qty', root);
-    const readQty = () => clamp(parseInt(qtyInput.value, 10) || 1, 1, 99);
+    const readQty = () => clamp(parseInt(qtyInput.value, 10) || 1, 1, maxQty(product));
 
     root.addEventListener('click', (e) => {
       const step = e.target.closest('[data-qty]');
       if (step) {
-        qtyInput.value = clamp(readQty() + Number(step.dataset.qty), 1, 99);
+        qtyInput.value = clamp(readQty() + Number(step.dataset.qty), 1, maxQty(product));
         return;
       }
       const thumb = e.target.closest('.gallery__thumb');
@@ -272,8 +284,7 @@
     qtyInput.addEventListener('change', () => { qtyInput.value = readQty(); });
 
     $('#add-btn', root).addEventListener('click', () => {
-      addToCart(product.id, readQty());
-      toast('Ajouté au panier', { href: '/cart.html', label: 'Voir le panier' });
+      addedToast(addToCart(product, readQty()));
     });
   }
 
@@ -291,11 +302,21 @@
     }
     const byId = new Map(products.map((p) => [p.id, p]));
 
+    let firstRender = true;
     const render = () => {
-      // Les produits retirés du catalogue sont retirés du panier.
       const stored = getCart();
-      const lines = stored.map((l) => ({ ...l, product: byId.get(l.id) })).filter((l) => l.product);
-      if (lines.length !== stored.length) saveCart(lines.map(({ id, quantity }) => ({ id, quantity })));
+      // Les produits retirés du catalogue ou épuisés sont retirés du panier, et les quantités
+      // sont ramenées au stock disponible ; l'utilisateur en est averti.
+      const lines = stored
+        .map((l) => ({ ...l, product: byId.get(l.id) }))
+        .filter((l) => l.product && l.product.stock !== 0)
+        .map((l) => ({ ...l, quantity: Math.min(l.quantity, maxQty(l.product)) }));
+      const changed = lines.length !== stored.length || lines.some((l) => l.quantity !== stored.find((s) => s.id === l.id)?.quantity);
+      if (changed) {
+        saveCart(lines.map(({ id, quantity }) => ({ id, quantity })));
+        if (firstRender) toast('Votre panier a été ajusté au stock disponible.');
+      }
+      firstRender = false;
 
       if (lines.length === 0) {
         root.innerHTML = '<div class="empty"><p>Votre panier est vide.</p><a class="btn btn--primary" href="/">Découvrir la boutique</a></div>';
@@ -320,7 +341,7 @@
                   <p class="cart-item__unit">${formatPrice(p.price)} l'unité</p>
                   <div class="qty" aria-label="Quantité">
                     <button type="button" data-qty="-1" aria-label="Diminuer">−</button>
-                    <input type="number" min="1" max="99" value="${quantity}" data-qty-input inputmode="numeric">
+                    <input type="number" min="1" max="${maxQty(p)}" value="${quantity}" data-qty-input inputmode="numeric">
                     <button type="button" data-qty="1" aria-label="Augmenter">+</button>
                   </div>
                 </div>
@@ -355,7 +376,7 @@
       const step = e.target.closest('[data-qty]');
       if (step) {
         const input = $('[data-qty-input]', item);
-        setQuantity(id, (parseInt(input.value, 10) || 1) + Number(step.dataset.qty));
+        setQuantity(byId.get(id), (parseInt(input.value, 10) || 1) + Number(step.dataset.qty));
         render();
       } else if (e.target.closest('[data-remove]')) {
         removeFromCart(id);
@@ -366,7 +387,7 @@
     root.addEventListener('change', (e) => {
       const input = e.target.closest('[data-qty-input]');
       if (!input) return;
-      setQuantity(input.closest('.cart-item').dataset.id, parseInt(input.value, 10) || 1);
+      setQuantity(byId.get(input.closest('.cart-item').dataset.id), parseInt(input.value, 10) || 1);
       render();
     });
 
@@ -407,8 +428,9 @@
   async function initSuccess() {
     const root = $('#order');
     const params = new URLSearchParams(location.search);
-    clearCart();
 
+    // Le panier n'est vidé qu'une fois une commande passée (démonstration avec récapitulatif, ou
+    // retour de Stripe avec un identifiant de session) : arriver ici sans commande ne doit pas le perdre.
     if (params.get('demo')) {
       let order = null;
       try {
@@ -417,6 +439,7 @@
         // Pas de récapitulatif disponible.
       }
       localStorage.removeItem(LAST_ORDER_KEY);
+      if (order) clearCart();
       root.innerHTML = `
         <div class="notice"><strong>Mode démonstration :</strong> aucun paiement réel n'a été effectué.</div>
         ${order ? orderLines(order.items, order.total) : ''}`;
@@ -424,11 +447,19 @@
     }
 
     const sessionId = params.get('session_id');
-    if (!sessionId) return;
+    if (!/^cs_(test|live)_[A-Za-z0-9]+$/.test(sessionId || '')) return;
+    // Stripe ne renvoie ici qu'après validation du paiement : la commande est passée,
+    // même si le récapitulatif ci-dessous ne peut pas être chargé.
+    clearCart();
     try {
       const res = await fetch(`/api/order/${encodeURIComponent(sessionId)}`);
       if (!res.ok) return;
       const order = await res.json();
+      const pending = order.status !== 'paid' && order.status !== 'no_payment_required';
+      if (pending) {
+        $('#status-title').textContent = 'Commande enregistrée';
+        $('#status-text').textContent = 'Votre paiement est en cours de confirmation par votre banque. Vous recevrez un e-mail dès qu’il sera validé.';
+      }
       root.innerHTML = `
         ${order.email ? `<p>Un reçu a été envoyé à <strong>${escapeHtml(order.email)}</strong>.</p>` : ''}
         ${orderLines(order.items, order.total)}`;
@@ -439,11 +470,15 @@
 
   // ---------- Démarrage ----------
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-add]');
     if (!btn) return;
-    addToCart(btn.dataset.add, 1);
-    toast('Ajouté au panier', { href: '/cart.html', label: 'Voir le panier' });
+    try {
+      const product = (await loadProducts()).find((p) => p.id === btn.dataset.add);
+      if (product) addedToast(addToCart(product, 1));
+    } catch (err) {
+      toast(err.message);
+    }
   });
 
   document.addEventListener('DOMContentLoaded', async () => {

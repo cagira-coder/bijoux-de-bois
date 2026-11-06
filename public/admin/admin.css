@@ -46,6 +46,7 @@
 .photo__actions button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: rgba(255, 255, 255, 0.92); color: var(--text); font-size: 0.9rem; display: grid; place-items: center; }
 .photo__actions button:hover { background: #fff; }
 .photo__actions button.del { color: var(--danger); }
+.order__alert { margin: 0.5rem 0 0; padding: 0.5rem 0.75rem; border-radius: 8px; background: #fff4e5; color: #8a4b00; font-weight: 600; }
 .cropper { margin-top: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface, #fff); }
 .cropper[hidden] { display: none; }
 .cropper p { margin: 0 0 0.75rem; }

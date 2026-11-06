@@ -190,7 +190,11 @@ module.exports = function createAdminRouter({ catalog, categoryStore, stripe, da
   function cleanProduct(body, existing) {
     const name = String(body.name || '').trim();
     const price = Number(String(body.price ?? '').replace(',', '.'));
-    const stock = Number.parseInt(body.stock, 10);
+    let stock = Number.parseInt(body.stock, 10);
+    // Si l'administrateur n'a pas touché au stock affiché dans le formulaire, on garde la valeur
+    // actuelle : une vente a pu la faire baisser pendant que la fiche était ouverte.
+    const stockLoaded = Number.parseInt(body.stockLoaded, 10);
+    if (Number.isInteger(stockLoaded) && stockLoaded === stock && Number.isInteger(existing.stock)) stock = existing.stock;
     const images = Array.isArray(body.images)
       ? body.images.filter((s) => typeof s === 'string' && /^\/images\/products\/[\w.-]+$/.test(s))
       : [];
@@ -393,39 +397,48 @@ module.exports = function createAdminRouter({ catalog, categoryStore, stripe, da
 
   // --- Commandes -----------------------------------------------------------
 
+  function readOrders() {
+    try {
+      return JSON.parse(fs.readFileSync(ordersFile, 'utf8'));
+    } catch {
+      return []; // Pas encore de commandes.
+    }
+  }
+
+  // Liste Stripe (articles, adresse) complétée par ce que le webhook a enregistré localement :
+  // paiement différé refusé, alerte de vente au-delà du stock.
   router.get('/orders', requireAuth, async (req, res) => {
+    const local = new Map(readOrders().map((o) => [o.id, o]));
     if (stripe) {
       try {
         const sessions = await stripe.checkout.sessions.list({ limit: 50, status: 'complete', expand: ['data.line_items'] });
         return res.json({
           source: 'stripe',
-          orders: sessions.data.map((s) => ({
-            id: s.id,
-            date: new Date(s.created * 1000).toISOString(),
-            email: s.customer_details?.email || null,
-            name: s.customer_details?.name || null,
-            total: s.amount_total / 100,
-            currency: s.currency,
-            status: s.payment_status,
-            shipping: s.shipping_details || s.collected_information?.shipping_details || null,
-            items: (s.line_items?.data || []).map((line) => ({
-              name: line.description,
-              quantity: line.quantity,
-              amount: line.amount_total / 100,
-            })),
-          })),
+          orders: sessions.data.map((s) => {
+            const saved = local.get(s.id);
+            return {
+              id: s.id,
+              date: new Date(s.created * 1000).toISOString(),
+              email: s.customer_details?.email || null,
+              name: s.customer_details?.name || null,
+              total: s.amount_total / 100,
+              currency: s.currency,
+              status: saved?.status === 'failed' ? 'failed' : s.payment_status,
+              ...(saved?.alert ? { alert: saved.alert } : {}),
+              shipping: s.shipping_details || s.collected_information?.shipping_details || null,
+              items: (s.line_items?.data || []).map((line) => ({
+                name: line.description,
+                quantity: line.quantity,
+                amount: line.amount_total / 100,
+              })),
+            };
+          }),
         });
       } catch (err) {
         console.error('Stripe (commandes) :', err.message);
       }
     }
-    let orders = [];
-    try {
-      orders = JSON.parse(fs.readFileSync(ordersFile, 'utf8'));
-    } catch {
-      // Pas encore de commandes.
-    }
-    res.json({ source: 'local', orders: orders.slice().reverse() });
+    res.json({ source: 'local', orders: [...local.values()].reverse() });
   });
 
   return router;

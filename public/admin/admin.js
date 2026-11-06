@@ -408,6 +408,7 @@
         category: $('#f-category').value,
         price: $('#f-price').value,
         stock: $('#f-stock').value,
+        stockLoaded: product.stock,
         shortDescription: $('#f-short').value,
         description: $('#f-desc').value,
         images: product.images,
@@ -557,9 +558,10 @@
             <div class="order__head">
               <strong>${money.format(o.total)}</strong>
               <span>${escapeHtml(o.name || o.email || 'Client')}${o.name && o.email ? ` · ${escapeHtml(o.email)}` : ''}</span>
-              <span class="tag ${o.status === 'paid' ? 'tag--ok' : 'tag--low'}">${o.status === 'paid' ? 'Payée' : escapeHtml(o.status)}</span>
+              <span class="tag ${o.status === 'paid' ? 'tag--ok' : o.status === 'failed' ? 'tag--out' : 'tag--low'}">${{ paid: 'Payée', unpaid: 'Paiement en attente', failed: 'Paiement refusé' }[o.status] || escapeHtml(o.status)}</span>
               <span class="order__date">${dateFmt.format(new Date(o.date))}</span>
             </div>
+            ${o.alert ? `<p class="order__alert">⚠ ${escapeHtml(o.alert)}</p>` : ''}
             <div class="order__body">
               ${o.items?.length ? `<div><h4>Articles</h4><ul>${o.items.map((it) => `<li>${escapeHtml(it.name)} × ${it.quantity} — ${money.format(it.amount)}</li>`).join('')}</ul></div>` : ''}
               ${formatAddress(o.shipping) ? `<div><h4>Livraison</h4><address>${escapeHtml(formatAddress(o.shipping))}</address></div>` : ''}
